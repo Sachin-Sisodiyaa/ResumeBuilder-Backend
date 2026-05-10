@@ -1,0 +1,44 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: payment-service
+  datasource:
+    url: ${PAYMENT_DB_URL:jdbc:mysql://localhost:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:18052004}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+
+server:
+  port: 8089
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+app:
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    currency: ${RAZORPAY_CURRENCY:INR}
+    premium-amount-paise: ${RAZORPAY_PREMIUM_AMOUNT_PAISE:49900}
+    premium-monthly-amount-paise: ${RAZORPAY_PREMIUM_MONTHLY_AMOUNT_PAISE:${RAZORPAY_PREMIUM_AMOUNT_PAISE:49900}}
+    premium-yearly-amount-paise: ${RAZORPAY_PREMIUM_YEARLY_AMOUNT_PAISE:499900}
+  auth:
+    base-url: ${AUTH_SERVICE_URL:http://localhost:8081}
+    internal-service-key: ${INTERNAL_SERVICE_KEY:resumeai-local-internal-service-key}
