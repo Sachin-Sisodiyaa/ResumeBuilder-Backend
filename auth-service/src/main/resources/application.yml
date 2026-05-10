@@ -1,0 +1,122 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: auth-service
+  servlet:
+    multipart:
+      max-file-size: ${PROFILE_PICTURE_MAX_FILE_SIZE:5MB}
+      max-request-size: ${PROFILE_PICTURE_MAX_REQUEST_SIZE:5MB}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:2s}
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/resumeai_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:18052004}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+        format_sql: false
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:local-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: openid, profile, email
+          github:
+            client-id: ${GITHUB_CLIENT_ID:local-github-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:}
+            scope: read:user, user:email
+          linkedin:
+            client-id: ${LINKEDIN_CLIENT_ID:local-linkedin-client-id}
+            client-secret: ${LINKEDIN_CLIENT_SECRET:}
+            scope: ${LINKEDIN_SCOPE:openid,profile,email}
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            redirect-uri: ${LINKEDIN_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}
+            client-name: LinkedIn
+        provider:
+          linkedin:
+            authorization-uri: https://www.linkedin.com/oauth/v2/authorization
+            token-uri: https://www.linkedin.com/oauth/v2/accessToken
+            jwk-set-uri: https://www.linkedin.com/oauth/openid/jwks
+            user-info-uri: https://api.linkedin.com/v2/userinfo
+            user-info-authentication-method: header
+            user-name-attribute: sub
+
+server:
+  port: 8081
+  forward-headers-strategy: framework
+
+management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
+    redis:
+      enabled: ${REDIS_HEALTH_ENABLED:false}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+app:
+  internal-service-key: ${INTERNAL_SERVICE_KEY:resumeai-local-internal-service-key}
+  protected-admin-email: ${APP_PROTECTED_ADMIN_EMAIL:}
+  bootstrap-admin:
+    enabled: ${APP_BOOTSTRAP_ADMIN_ENABLED:false}
+    email: ${APP_BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${APP_BOOTSTRAP_ADMIN_PASSWORD:}
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+  auth:
+    reset-password:
+      base-url: ${RESET_PASSWORD_BASE_URL:http://localhost:3000/auth/reset-password}
+      expiry-minutes: ${RESET_PASSWORD_EXPIRY_MINUTES:10}
+  profile-pictures:
+    storage-dir: ${PROFILE_PICTURE_STORAGE_DIR:uploads/profile-pictures}
+    public-base-url: ${PROFILE_PICTURE_PUBLIC_BASE_URL:http://localhost:8090}
+    max-bytes: ${PROFILE_PICTURE_MAX_BYTES:5242880}
+  mail:
+    enabled: ${APP_MAIL_ENABLED:true}
+    from: ${MAIL_FROM:no-reply@resumeai.local}
+  notification:
+    base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+    connect-timeout-ms: ${NOTIFICATION_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${NOTIFICATION_READ_TIMEOUT_MS:10000}
+  oauth2:
+    redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:3000/auth/oauth2/callback}
+    authorization-base-url: ${OAUTH2_AUTHORIZATION_BASE_URL:http://localhost:8090}
