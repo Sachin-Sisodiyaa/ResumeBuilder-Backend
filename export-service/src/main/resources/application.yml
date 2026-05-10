@@ -1,0 +1,60 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: export-service
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        auto-startup: ${EXPORT_RABBITMQ_ENABLED:false}
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/resumeai_export?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:18052004}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+
+server:
+  port: 8086
+
+management:
+  health:
+    rabbit:
+      enabled: ${RABBIT_HEALTH_ENABLED:false}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+app:
+  export:
+    # Local SQL-backed app keeps export metadata in MySQL and files on disk instead of AWS S3.
+    storage-dir: ${EXPORT_STORAGE_DIR:./exports}
+    # Days before a file is considered expired and cleaned up
+    expiry-days: ${EXPORT_EXPIRY_DAYS:7}
+    cleanup-cron: ${EXPORT_CLEANUP_CRON:0 0 2 * * *}
+    # Free tier: max PDF exports per day
+    free-pdf-daily-limit: ${EXPORT_FREE_PDF_DAILY_LIMIT:10}
+    # Public base URL for download links (set to your API gateway URL in production)
+    download-base-url: ${EXPORT_DOWNLOAD_BASE_URL:http://localhost:8086}
+    async-enabled: ${EXPORT_ASYNC_ENABLED:true}
+    rabbitmq-enabled: ${EXPORT_RABBITMQ_ENABLED:false}
+    queue-name: ${EXPORT_QUEUE_NAME:resumeai.export.jobs}
+  notification:
+    base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
