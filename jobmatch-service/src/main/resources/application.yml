@@ -1,0 +1,48 @@
+spring:
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]
+  application:
+    name: jobmatch-service
+  servlet:
+    multipart:
+      max-file-size: ${JOB_MATCH_RESUME_MAX_FILE_SIZE:8MB}
+      max-request-size: ${JOB_MATCH_RESUME_MAX_REQUEST_SIZE:8MB}
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/resumeai_jobmatch?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:18052004}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+
+server:
+  port: 8087
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+app:
+  notification:
+    base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+  jobsearch:
+    rapidapi:
+      key: ${RAPIDAPI_KEY:}
+      host: ${RAPIDAPI_HOST:jsearch.p.rapidapi.com}
+      base-url: ${RAPIDAPI_BASE_URL:https://jsearch.p.rapidapi.com}
+    results-per-page: ${JOB_RESULTS_PER_PAGE:10}
+    retention-days: ${JOB_MATCH_RETENTION_DAYS:5}
+    cleanup-cron: ${JOB_MATCH_CLEANUP_CRON:0 0 3 * * *}
