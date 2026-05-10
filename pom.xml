@@ -1,0 +1,239 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.resumeai</groupId>
+    <artifactId>resumeai-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>resumeai-backend</name>
+    <description>Multi-module Spring Boot backend for the ResumeAI microservices platform.</description>
+
+    <modules>
+        <module>auth-service</module>
+        <module>resume-service</module>
+        <module>section-service</module>
+        <module>ai-service</module>
+        <module>template-service</module>
+        <module>export-service</module>
+        <module>jobmatch-service</module>
+        <module>notification-service</module>
+        <module>payment-service</module>
+        <module>resumeai-web</module>
+        <module>gateway-service</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+        <lombok.version>1.18.38</lombok.version>
+        <spring.boot.version>3.3.4</spring.boot.version>
+        <spring.cloud.version>2023.0.3</spring.cloud.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <jjwt.version>0.12.6</jjwt.version>
+        <pdfbox.version>3.0.3</pdfbox.version>
+        <flying-saucer.version>10.2.0</flying-saucer.version>
+        <poi.version>5.3.0</poi.version>
+        <bucket4j.version>8.10.1</bucket4j.version>
+        <springdoc.version>2.6.0</springdoc.version>
+        <sonar.maven.plugin.version>5.1.0.4751</sonar.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.12</jacoco.maven.plugin.version>
+        <sonar.projectKey>resumeai-backend</sonar.projectKey>
+        <sonar.projectName>ResumeAI Backend</sonar.projectName>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <sonar.coverage.exclusions>
+            **/*Application.java,
+            **/*Controller.java,
+            **/*Config.java,
+            **/*Dtos.java,
+            **/dto/**/*.java,
+            **/model/**/*.java,
+            **/repository/**/*.java,
+            **/*Client.java,
+            **/*Listener.java,
+            **/*Publisher.java,
+            **/*Queue.java,
+            **/*Filter.java,
+            **/*Handler.java,
+            **/*Resolver.java,
+            **/*Generator.java,
+            **/ResumeDocumentData.java,
+            **/DotenvLoader.java
+        </sonar.coverage.exclusions>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot BOM -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Spring Cloud BOM (for Gateway) -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring.cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- JWT -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- PDF generation (Apache PDFBox) -->
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+
+            <!-- HTML-to-PDF rendering (Flying Saucer + OpenPDF) -->
+            <dependency>
+                <groupId>org.xhtmlrenderer</groupId>
+                <artifactId>flying-saucer-pdf</artifactId>
+                <version>${flying-saucer.version}</version>
+            </dependency>
+
+            <!-- DOCX generation (Apache POI) -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+
+            <!-- Rate limiting -->
+            <dependency>
+                <groupId>com.bucket4j</groupId>
+                <artifactId>bucket4j-core</artifactId>
+                <version>${bucket4j.version}</version>
+            </dependency>
+
+            <!-- API documentation -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <release>${java.version}</release>
+                        <parameters>true</parameters>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar.maven.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.maven.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*Application*</exclude>
+                        <exclude>**/*Controller*</exclude>
+                        <exclude>**/*Config*</exclude>
+                        <exclude>**/*Dtos*</exclude>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/model/**</exclude>
+                        <exclude>**/repository/**</exclude>
+                        <exclude>**/*Client*</exclude>
+                        <exclude>**/*Listener*</exclude>
+                        <exclude>**/*Publisher*</exclude>
+                        <exclude>**/*Queue*</exclude>
+                        <exclude>**/*Filter*</exclude>
+                        <exclude>**/*Handler*</exclude>
+                        <exclude>**/*Resolver*</exclude>
+                        <exclude>**/*Config*</exclude>
+                        <exclude>**/*Generator*</exclude>
+                        <exclude>**/ResumeDocumentData*</exclude>
+                        <exclude>**/DotenvLoader*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
