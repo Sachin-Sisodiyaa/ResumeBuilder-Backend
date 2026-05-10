@@ -1,0 +1,185 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:3000"
+              - "http://127.0.0.1:3000"
+              - "http://localhost:3001"
+              - "http://127.0.0.1:3001"
+              - "http://localhost:4200"
+              - "http://127.0.0.1:4200"
+              - "http://localhost:5173"
+              - "http://127.0.0.1:5173"
+              - "${FRONTEND_URL:http://localhost:3000}"
+            allowed-methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+            allowed-headers: ["*"]
+            allow-credentials: true
+
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - AddResponseHeader=X-ResumeAI-Gateway, gateway-service
+
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: auth-service
+                fallbackUri: forward:/fallback/auth-service
+
+        - id: auth-oauth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/oauth2/**,/login/oauth2/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: auth-oauth-service
+                fallbackUri: forward:/fallback/auth-service
+
+        - id: resume-service
+          uri: ${RESUME_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/resumes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: resume-service
+                fallbackUri: forward:/fallback/resume-service
+
+        - id: section-service
+          uri: ${SECTION_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/sections/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: section-service
+                fallbackUri: forward:/fallback/section-service
+
+        - id: ai-service
+          uri: ${AI_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/v1/ai/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ai-service
+                fallbackUri: forward:/fallback/ai-service
+
+        - id: template-service
+          uri: ${TEMPLATE_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/api/v1/templates/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: template-service
+                fallbackUri: forward:/fallback/template-service
+
+        - id: export-service
+          uri: ${EXPORT_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/api/v1/exports/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: export-service
+                fallbackUri: forward:/fallback/export-service
+
+        - id: jobmatch-service
+          uri: ${JOBMATCH_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/api/v1/job-matches/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: jobmatch-service
+                fallbackUri: forward:/fallback/jobmatch-service
+
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notification-service
+                fallbackUri: forward:/fallback/notification-service
+
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://localhost:8089}
+          predicates:
+            - Path=/api/v1/payments/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: payment-service
+                fallbackUri: forward:/fallback/payment-service
+
+        - id: resumeai-web
+          uri: ${WEB_SERVICE_URL:http://localhost:8091}
+          predicates:
+            - Path=/api/v1/web/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: resumeai-web
+                fallbackUri: forward:/fallback/resumeai-web
+
+server:
+  port: 8090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,gateway
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 20s
+        cancelRunningFuture: true
+    instances:
+      auth-service:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      auth-oauth-service:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: INFO
+    org.springframework.boot.autoconfigure: WARN
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
