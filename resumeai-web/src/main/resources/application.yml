@@ -1,0 +1,18 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: resumeai-web
+server:
+  port: 8091
+
+app:
+  services:
+    auth: ${AUTH_SERVICE_URL:http://localhost:8081}
+    resume: ${RESUME_SERVICE_URL:http://localhost:8082}
+    section: ${SECTION_SERVICE_URL:http://localhost:8083}
+    ai: ${AI_SERVICE_URL:http://localhost:8084}
+    template: ${TEMPLATE_SERVICE_URL:http://localhost:8085}
+    export: ${EXPORT_SERVICE_URL:http://localhost:8086}
+    jobmatch: ${JOBMATCH_SERVICE_URL:http://localhost:8087}
+    notification: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
