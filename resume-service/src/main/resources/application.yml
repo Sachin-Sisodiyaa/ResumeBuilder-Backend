@@ -1,0 +1,52 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: resume-service
+  servlet:
+    multipart:
+      max-file-size: ${RESUME_IMPORT_MAX_FILE_SIZE:8MB}
+      max-request-size: ${RESUME_IMPORT_MAX_REQUEST_SIZE:8MB}
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:18052004}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+
+server:
+  port: 8082
+  error:
+    include-message: ${SERVER_ERROR_INCLUDE_MESSAGE:never}
+    include-binding-errors: ${SERVER_ERROR_INCLUDE_BINDING_ERRORS:never}
+    include-exception: ${SERVER_ERROR_INCLUDE_EXCEPTION:false}
+    include-stacktrace: ${SERVER_ERROR_INCLUDE_STACKTRACE:never}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+app:
+  template:
+    base-url: ${TEMPLATE_SERVICE_URL:http://localhost:8085}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
