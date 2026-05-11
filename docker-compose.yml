@@ -49,6 +49,7 @@ services:
       - JOBMATCH_SERVICE_URL=http://jobmatch-service:8087
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
       - PAYMENT_SERVICE_URL=http://payment-service:8089
+      - WEB_SERVICE_URL=http://resumeai-web:8091
     depends_on:
       - auth-service
 
@@ -184,6 +185,31 @@ services:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+
+  resumeai-web:
+    build:
+      context: .
+      args:
+        MODULE: resumeai-web
+    ports:
+      - "8091:8091"
+    env_file:
+      - .env
+    environment:
+      - APP_SERVICES_AUTH=http://auth-service:8081
+      - APP_SERVICES_RESUME=http://resume-service:8082
+      - APP_SERVICES_SECTION=http://section-service:8083
+      - APP_SERVICES_AI=http://ai-service:8084
+      - APP_SERVICES_TEMPLATE=http://template-service:8085
+      - APP_SERVICES_EXPORT=http://export-service:8086
+      - APP_SERVICES_JOBMATCH=http://jobmatch-service:8087
+      - APP_SERVICES_NOTIFICATION=http://notification-service:8088
+    depends_on:
+      - auth-service
+      - resume-service
+      - ai-service
+      - template-service
+      - notification-service
 
 volumes:
   redis-data:
