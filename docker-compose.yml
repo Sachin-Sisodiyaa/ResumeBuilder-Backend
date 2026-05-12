@@ -64,6 +64,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -79,6 +81,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -93,6 +97,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_section?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -107,6 +113,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_ai?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -122,6 +130,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_template?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -136,6 +146,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_export?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -154,6 +166,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_jobmatch?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -169,6 +183,8 @@ services:
       - .env
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -182,7 +198,9 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - PAYMENT_DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=18052004
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
