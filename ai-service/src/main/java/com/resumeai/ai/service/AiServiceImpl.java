@@ -12,7 +12,9 @@ import com.resumeai.ai.repository.AiRequestRepository;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +60,9 @@ public class AiServiceImpl implements AiService {
     private static final String PLAN_PREMIUM = "PREMIUM";
     private static final String AI_TOTAL = "AI_TOTAL";
     private static final String PROVIDER_FALLBACK = "Provider fallback";
+    private static final String DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
+    private static final String DEFAULT_OPENAI_MODEL = "gpt-4o";
+    private static final String DEFAULT_CLAUDE_MODEL = "claude-3-5-sonnet-20241022";
     private static final String LANGUAGE_SUFFIX = ". Language: ";
     private static final String JSON_MODEL = "model";
     private static final String JSON_MESSAGES = "messages";
@@ -490,9 +495,15 @@ public class AiServiceImpl implements AiService {
     }
 
     private String resolveModel() {
-        if (!unavailableModels.contains(primaryModel)) return primaryModel;
-        log.warn("Primary model {} unavailable, failing over to {}", primaryModel, secondaryModel);
-        return secondaryModel;
+        for (String model : configuredModels()) {
+            if (!unavailableModels.contains(model)) {
+                if (!model.equalsIgnoreCase(primaryModel)) {
+                    log.warn("Primary model {} unavailable or unconfigured, using {}", primaryModel, model);
+                }
+                return model;
+            }
+        }
+        return primaryModel;
     }
 
     /**
@@ -500,13 +511,13 @@ public class AiServiceImpl implements AiService {
      * - llama, mixtral, and gemma models -> Groq Chat Completions API
      * - gpt and o1 models -> legacy OpenAI Chat Completions API
      * - claude-* -> Anthropic Messages API
-     * Falls back to the stub when the API key is absent or the call fails.
+     * Falls back to the stub only after all configured real providers fail.
      */
     private String callAiApi(String prompt, String model) {
         try {
             return callModel(prompt, model);
         } catch (RestClientResponseException ex) {
-            log.warn("AI API call failed for model={} with HTTP {}: {}. Trying configured failover model.",
+            log.warn("AI API call failed for model={} with HTTP {}: {}. Trying configured failover models.",
                     model, ex.getStatusCode().value(), providerError(ex));
             unavailableModels.add(model);
             String failoverResponse = tryFailover(prompt, model);
@@ -518,7 +529,7 @@ public class AiServiceImpl implements AiService {
             }
             throw aiProviderException(ex);
         } catch (RestClientException | IllegalStateException ex) {
-            log.warn("AI API call failed for model={}: {}. Trying configured failover model.",
+            log.warn("AI API call failed for model={}: {}. Trying configured failover models.",
                     model, ex.getMessage());
             unavailableModels.add(model);
             String failoverResponse = tryFailover(prompt, model);
@@ -529,25 +540,66 @@ public class AiServiceImpl implements AiService {
                 return mockedAiResponse(prompt, PROVIDER_FALLBACK);
             }
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
-                    "AI provider is unavailable or not configured. Check GROQ_API_KEY and restart ai-service.");
+                    "AI provider is unavailable or not configured. Check OPENAI_API_KEY, CLAUDE_API_KEY, or GROQ_API_KEY and restart ai-service.");
         }
     }
 
     private String tryFailover(String prompt, String failedModel) {
-        if (failedModel.equalsIgnoreCase(secondaryModel)) {
-            return null;
-        }
-        try {
-            return callModel(prompt, secondaryModel);
-        } catch (RestClientResponseException ex) {
-            log.warn("AI failover failed for model={} with HTTP {}: {}",
-                    secondaryModel, ex.getStatusCode().value(), providerError(ex));
-            unavailableModels.add(secondaryModel);
-        } catch (RestClientException | IllegalStateException ex) {
-            log.warn("AI failover failed for model={}: {}", secondaryModel, ex.getMessage());
-            unavailableModels.add(secondaryModel);
+        for (String failoverModel : configuredModels()) {
+            if (failoverModel.equalsIgnoreCase(failedModel) || unavailableModels.contains(failoverModel)) {
+                continue;
+            }
+            try {
+                log.info("Trying AI failover model={}", failoverModel);
+                return callModel(prompt, failoverModel);
+            } catch (RestClientResponseException ex) {
+                log.warn("AI failover failed for model={} with HTTP {}: {}",
+                        failoverModel, ex.getStatusCode().value(), providerError(ex));
+                unavailableModels.add(failoverModel);
+            } catch (RestClientException | IllegalStateException ex) {
+                log.warn("AI failover failed for model={}: {}", failoverModel, ex.getMessage());
+                unavailableModels.add(failoverModel);
+            }
         }
         return null;
+    }
+
+    private List<String> configuredModels() {
+        Set<String> models = new LinkedHashSet<>();
+        addIfConfigured(models, primaryModel);
+        addIfConfigured(models, secondaryModel);
+        if (isConfigured(groqApiKey)) {
+            addIfConfigured(models, DEFAULT_GROQ_MODEL);
+        }
+        if (isConfigured(openAiApiKey)) {
+            addIfConfigured(models, DEFAULT_OPENAI_MODEL);
+        }
+        if (isConfigured(claudeApiKey)) {
+            addIfConfigured(models, DEFAULT_CLAUDE_MODEL);
+        }
+        return new ArrayList<>(models);
+    }
+
+    private void addIfConfigured(Set<String> models, String model) {
+        if (model == null || model.isBlank()) {
+            return;
+        }
+        if (isModelProviderConfigured(model)) {
+            models.add(model);
+        } else {
+            log.debug("Skipping AI model={} because its API key is not configured", model);
+        }
+    }
+
+    private boolean isModelProviderConfigured(String model) {
+        String normalized = model == null ? "" : model.toLowerCase();
+        if (normalized.startsWith("claude")) {
+            return isConfigured(claudeApiKey);
+        }
+        if (normalized.startsWith("gpt") || normalized.startsWith("o1")) {
+            return isConfigured(openAiApiKey);
+        }
+        return isConfigured(groqApiKey);
     }
 
     private ResponseStatusException aiProviderException(RestClientResponseException ex) {
@@ -599,10 +651,6 @@ public class AiServiceImpl implements AiService {
      */
     private String callGroq(String prompt, String model) {
         if (groqApiKey == null || groqApiKey.isBlank()) {
-            log.debug("GROQ_API_KEY not set - using stub for model={}", model);
-            if (mockEnabled) {
-                return mockedAiResponse(prompt, "Groq");
-            }
             throw new IllegalStateException("GROQ_API_KEY is not configured");
         }
 
@@ -639,10 +687,6 @@ public class AiServiceImpl implements AiService {
      */
     private String callOpenAi(String prompt, String model) {
         if (openAiApiKey == null || openAiApiKey.isBlank()) {
-            log.debug("OPENAI_API_KEY not set Ã¢â‚¬â€ using stub for model={}", model);
-            if (mockEnabled) {
-                return mockedAiResponse(prompt, "GPT-4o");
-            }
             throw new IllegalStateException("OPENAI_API_KEY is not configured");
         }
 
@@ -690,10 +734,6 @@ public class AiServiceImpl implements AiService {
      */
     private String callClaude(String prompt, String model) {
         if (claudeApiKey == null || claudeApiKey.isBlank()) {
-            log.debug("CLAUDE_API_KEY not set Ã¢â‚¬â€ using stub for model={}", model);
-            if (mockEnabled) {
-                return mockedAiResponse(prompt, "Claude");
-            }
             throw new IllegalStateException("CLAUDE_API_KEY is not configured");
         }
 

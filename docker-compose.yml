@@ -65,7 +65,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -82,7 +83,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -98,7 +100,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_section?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -114,7 +117,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_ai?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -131,7 +135,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_template?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -147,13 +152,16 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_export?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_started
 
   jobmatch-service:
     build:
@@ -167,7 +175,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_jobmatch?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - NOTIFICATION_SERVICE_URL=http://notification-service:8088
@@ -184,7 +193,8 @@ services:
     environment:
       - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
 
@@ -200,9 +210,12 @@ services:
     environment:
       - PAYMENT_DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - DB_USERNAME=root
-      - DB_PASSWORD=18052004
+      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-resumeai-local-internal-service-key}
 
   resumeai-web:
     build:
