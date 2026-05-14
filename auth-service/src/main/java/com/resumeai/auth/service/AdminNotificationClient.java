@@ -1,34 +1,31 @@
 package com.resumeai.auth.service;
 
 import com.resumeai.auth.model.User;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 @Component
 @Slf4j
 public class AdminNotificationClient {
-    private final RestTemplate restTemplate;
-    private final String notificationBaseUrl;
+    private final WebClient webClient;
     private volatile String lastFailureMessage = "";
 
     public AdminNotificationClient(
-            RestTemplateBuilder restTemplateBuilder,
-            @Value("${app.notification.base-url:http://localhost:8088}") String notificationBaseUrl,
+            @Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder,
+            @Value("${app.notification.base-url:http://notification-service}") String notificationBaseUrl,
             @Value("${app.notification.connect-timeout-ms:2000}") long connectTimeoutMs,
             @Value("${app.notification.read-timeout-ms:10000}") long readTimeoutMs) {
-        this.restTemplate = restTemplateBuilder
-                .setConnectTimeout(Duration.ofMillis(connectTimeoutMs))
-                .setReadTimeout(Duration.ofMillis(readTimeoutMs))
+        this.webClient = webClientBuilder.clone()
+                .baseUrl(notificationBaseUrl)
                 .build();
-        this.notificationBaseUrl = notificationBaseUrl;
     }
 
     public void notifyAdminsOfNewUser(List<User> admins, User newUser) {
@@ -55,9 +52,15 @@ public class AdminNotificationClient {
             payload.put("recipientId", recipient.getUserId());
             payload.put("recipientEmail", recipient.getEmail());
             
-            restTemplate.postForObject(notificationBaseUrl + "/api/v1/notifications", payload, Object.class);
+            webClient.post()
+                    .uri("/api/v1/notifications")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
             return true;
-        } catch (RestClientException ex) {
+        } catch (WebClientException ex) {
             lastFailureMessage = ex.getMessage();
             log.warn("Could not send {} notification to {}: {}",
                     details.get("type"), recipient.getEmail(), ex.getMessage());
@@ -77,12 +80,15 @@ public class AdminNotificationClient {
             recipients.forEach(user -> recipientEmails.put(user.getUserId(), user.getEmail()));
             payload.put("recipientEmails", recipientEmails);
 
-            List<?> response = restTemplate.postForObject(
-                    notificationBaseUrl + "/api/v1/notifications/bulk",
-                    payload,
-                    List.class);
+            List<?> response = webClient.post()
+                    .uri("/api/v1/notifications/bulk")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(List.class)
+                    .block();
             return response == null ? 0 : response.size();
-        } catch (RestClientException ex) {
+        } catch (WebClientException ex) {
             lastFailureMessage = ex.getMessage();
             log.warn("Could not send bulk {} notification to {} recipient(s): {}",
                     details.get("type"), recipients.size(), ex.getMessage());

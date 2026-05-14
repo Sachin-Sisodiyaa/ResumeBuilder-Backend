@@ -14,6 +14,8 @@ Spring Boot multi-module backend scaffold for the ResumeAI case study defined in
 - `notification-service`
 - `resumeai-web`
 - `gateway-service`
+- `discovery-service`
+- `admin-service`
 
 ## What is implemented
 
@@ -39,6 +41,8 @@ Spring Boot multi-module backend scaffold for the ResumeAI case study defined in
 - `notification-service` -> `8088`
 - `resumeai-web` -> `8091`
 - `gateway-service` -> `8090`
+- `discovery-service` -> `8761`
+- `admin-service` -> `9090`
 
 ## Run
 
@@ -80,7 +84,29 @@ Run the gateway used by the frontend:
 mvn -pl gateway-service spring-boot:run
 ```
 
-For end-to-end frontend use, the Angular app should call the gateway on `http://localhost:8090`, and the gateway should proxy traffic to the underlying services plus `resumeai-web`.
+For end-to-end frontend use, start discovery first, then admin, then the app services and gateway:
+
+```bash
+mvn -pl discovery-service spring-boot:run
+mvn -pl admin-service spring-boot:run
+mvn -pl auth-service,resume-service,section-service,ai-service,template-service,export-service,jobmatch-service,notification-service,payment-service,resumeai-web,gateway-service spring-boot:run
+```
+
+When stopping the stack, use the reverse order: stop the app services and gateway first, then admin, then discovery. If discovery is stopped first, the remaining services may log temporary Eureka heartbeat or de-registration connection errors because `localhost:8761` is already gone; those shutdown-time errors are harmless.
+
+The Angular app should call the gateway on `http://localhost:8090`. The gateway now uses Eureka-backed `lb://...` routes to proxy traffic to the underlying services plus `resumeai-web`.
+
+Eureka dashboard:
+
+```text
+http://localhost:8761
+```
+
+Spring Boot Admin dashboard:
+
+```text
+http://localhost:9090
+```
 
 ## SMTP Setup For Real Password Reset Emails
 

@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   rabbitmq:
     image: rabbitmq:3.13-management
     container_name: resumeai-rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -15,10 +14,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
 
   redis:
     image: redis:7.2-alpine
     container_name: resumeai-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
@@ -29,6 +30,48 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+
+  discovery-service:
+    build:
+      context: .
+      args:
+        MODULE: discovery-service
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - ADMIN_SERVER_URL=http://admin-service:9090
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  admin-service:
+    build:
+      context: .
+      args:
+        MODULE: admin-service
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9090/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
 
   gateway-service:
     build:
@@ -37,21 +80,47 @@ services:
         MODULE: gateway-service
     ports:
       - "8090:8090"
+    restart: unless-stopped
     env_file:
       - .env
     environment:
-      - AUTH_SERVICE_URL=http://auth-service:8081
-      - RESUME_SERVICE_URL=http://resume-service:8082
-      - SECTION_SERVICE_URL=http://section-service:8083
-      - AI_SERVICE_URL=http://ai-service:8084
-      - TEMPLATE_SERVICE_URL=http://template-service:8085
-      - EXPORT_SERVICE_URL=http://export-service:8086
-      - JOBMATCH_SERVICE_URL=http://jobmatch-service:8087
-      - NOTIFICATION_SERVICE_URL=http://notification-service:8088
-      - PAYMENT_SERVICE_URL=http://payment-service:8089
-      - WEB_SERVICE_URL=http://resumeai-web:8091
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://gateway-service:8090
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://gateway-service:8090/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://gateway-service:8090/actuator/health
     depends_on:
-      - auth-service
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      resume-service:
+        condition: service_healthy
+      section-service:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+      template-service:
+        condition: service_healthy
+      export-service:
+        condition: service_healthy
+      jobmatch-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      resumeai-web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8090/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 45s
 
   auth-service:
     build:
@@ -60,6 +129,9 @@ services:
         MODULE: auth-service
     ports:
       - "8081:8081"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -69,7 +141,28 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - NOTIFICATION_SERVICE_URL=http://notification-service:8088
+      - NOTIFICATION_SERVICE_URL=http://notification-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://auth-service:8081
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://auth-service:8081/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://auth-service:8081/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   resume-service:
     build:
@@ -78,6 +171,9 @@ services:
         MODULE: resume-service
     ports:
       - "8082:8082"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -87,6 +183,28 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - TEMPLATE_SERVICE_URL=http://template-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://resume-service:8082
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://resume-service:8082/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://resume-service:8082/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   section-service:
     build:
@@ -95,6 +213,9 @@ services:
         MODULE: section-service
     ports:
       - "8083:8083"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -104,6 +225,27 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://section-service:8083
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://section-service:8083/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://section-service:8083/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8083/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   ai-service:
     build:
@@ -112,6 +254,9 @@ services:
         MODULE: ai-service
     ports:
       - "8084:8084"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -121,7 +266,28 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - NOTIFICATION_SERVICE_URL=http://notification-service:8088
+      - NOTIFICATION_SERVICE_URL=http://notification-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://ai-service:8084
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://ai-service:8084/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://ai-service:8084/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8084/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   template-service:
     build:
@@ -130,6 +296,9 @@ services:
         MODULE: template-service
     ports:
       - "8085:8085"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -139,6 +308,27 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://template-service:8085
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://template-service:8085/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://template-service:8085/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8085/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   export-service:
     build:
@@ -147,6 +337,9 @@ services:
         MODULE: export-service
     ports:
       - "8086:8086"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -156,12 +349,28 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - NOTIFICATION_SERVICE_URL=http://notification-service:8088
+      - NOTIFICATION_SERVICE_URL=http://notification-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://export-service:8086
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://export-service:8086/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://export-service:8086/actuator/health
     depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8086/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   jobmatch-service:
     build:
@@ -170,6 +379,9 @@ services:
         MODULE: jobmatch-service
     ports:
       - "8087:8087"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -179,7 +391,28 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - NOTIFICATION_SERVICE_URL=http://notification-service:8088
+      - NOTIFICATION_SERVICE_URL=http://notification-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://jobmatch-service:8087
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://jobmatch-service:8087/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://jobmatch-service:8087/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8087/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   notification-service:
     build:
@@ -188,6 +421,9 @@ services:
         MODULE: notification-service
     ports:
       - "8088:8088"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -197,6 +433,28 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - AUTH_SERVICE_URL=http://auth-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://notification-service:8088
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://notification-service:8088/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://notification-service:8088/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8088/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   payment-service:
     build:
@@ -205,6 +463,9 @@ services:
         MODULE: payment-service
     ports:
       - "8089:8089"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
@@ -214,8 +475,29 @@ services:
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - AUTH_SERVICE_URL=http://auth-service:8081
+      - AUTH_SERVICE_URL=http://auth-service
       - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-resumeai-local-internal-service-key}
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://payment-service:8089
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://payment-service:8089/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://payment-service:8089/actuator/health
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8089/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   resumeai-web:
     build:
@@ -224,23 +506,51 @@ services:
         MODULE: resumeai-web
     ports:
       - "8091:8091"
+    restart: unless-stopped
     env_file:
       - .env
     environment:
-      - APP_SERVICES_AUTH=http://auth-service:8081
-      - APP_SERVICES_RESUME=http://resume-service:8082
-      - APP_SERVICES_SECTION=http://section-service:8083
-      - APP_SERVICES_AI=http://ai-service:8084
-      - APP_SERVICES_TEMPLATE=http://template-service:8085
-      - APP_SERVICES_EXPORT=http://export-service:8086
-      - APP_SERVICES_JOBMATCH=http://jobmatch-service:8087
-      - APP_SERVICES_NOTIFICATION=http://notification-service:8088
+      - AUTH_SERVICE_URL=http://auth-service
+      - RESUME_SERVICE_URL=http://resume-service
+      - SECTION_SERVICE_URL=http://section-service
+      - AI_SERVICE_URL=http://ai-service
+      - TEMPLATE_SERVICE_URL=http://template-service
+      - EXPORT_SERVICE_URL=http://export-service
+      - JOBMATCH_SERVICE_URL=http://jobmatch-service
+      - NOTIFICATION_SERVICE_URL=http://notification-service
+      - EUREKA_SERVER_URL=http://discovery-service:8761/eureka/
+      - ADMIN_SERVER_URL=http://admin-service:9090
+      - ADMIN_CLIENT_ENABLED=true
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_URL=http://resumeai-web:8091
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_MANAGEMENT_URL=http://resumeai-web:8091/actuator
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_HEALTH_URL=http://resumeai-web:8091/actuator/health
     depends_on:
-      - auth-service
-      - resume-service
-      - ai-service
-      - template-service
-      - notification-service
+      discovery-service:
+        condition: service_healthy
+      admin-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      resume-service:
+        condition: service_healthy
+      section-service:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+      template-service:
+        condition: service_healthy
+      export-service:
+        condition: service_healthy
+      jobmatch-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8091/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
 volumes:
   redis-data:

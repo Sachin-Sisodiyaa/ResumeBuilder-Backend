@@ -6,12 +6,13 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -26,29 +27,39 @@ public class WebPortalServiceImpl implements WebPortalService {
     private static final ParameterizedTypeReference<List<Map<String, Object>>> LIST_OF_MAPS =
             new ParameterizedTypeReference<>() { };
 
-    @Value("${app.services.auth:http://localhost:8081}")
-    private String authServiceUrl = "http://localhost:8081";
+    private final WebClient webClient;
 
-    @Value("${app.services.resume:http://localhost:8082}")
-    private String resumeServiceUrl = "http://localhost:8082";
+    @Value("${app.services.auth:http://auth-service}")
+    private String authServiceUrl = "http://auth-service";
 
-    @Value("${app.services.section:http://localhost:8083}")
-    private String sectionServiceUrl = "http://localhost:8083";
+    @Value("${app.services.resume:http://resume-service}")
+    private String resumeServiceUrl = "http://resume-service";
 
-    @Value("${app.services.ai:http://localhost:8084}")
-    private String aiServiceUrl = "http://localhost:8084";
+    @Value("${app.services.section:http://section-service}")
+    private String sectionServiceUrl = "http://section-service";
 
-    @Value("${app.services.template:http://localhost:8085}")
-    private String templateServiceUrl = "http://localhost:8085";
+    @Value("${app.services.ai:http://ai-service}")
+    private String aiServiceUrl = "http://ai-service";
 
-    @Value("${app.services.export:http://localhost:8086}")
-    private String exportServiceUrl = "http://localhost:8086";
+    @Value("${app.services.template:http://template-service}")
+    private String templateServiceUrl = "http://template-service";
 
-    @Value("${app.services.jobmatch:http://localhost:8087}")
-    private String jobMatchServiceUrl = "http://localhost:8087";
+    @Value("${app.services.export:http://export-service}")
+    private String exportServiceUrl = "http://export-service";
 
-    @Value("${app.services.notification:http://localhost:8088}")
-    private String notificationServiceUrl = "http://localhost:8088";
+    @Value("${app.services.jobmatch:http://jobmatch-service}")
+    private String jobMatchServiceUrl = "http://jobmatch-service";
+
+    @Value("${app.services.notification:http://notification-service}")
+    private String notificationServiceUrl = "http://notification-service";
+
+    WebPortalServiceImpl() {
+        this(WebClient.builder());
+    }
+
+    public WebPortalServiceImpl(@Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
 
     @Override
     public WebOverview home() {
@@ -395,7 +406,7 @@ public class WebPortalServiceImpl implements WebPortalService {
 
     private String ping(String baseUrl) {
         try {
-            RestClient.create(baseUrl).get().uri("/actuator/health").retrieve().toBodilessEntity();
+            webClient.get().uri(baseUrl + "/actuator/health").retrieve().toBodilessEntity().block();
             return "UP";
         } catch (Exception ex) {
             return "UNKNOWN";
@@ -425,13 +436,13 @@ public class WebPortalServiceImpl implements WebPortalService {
 
     private List<Map<String, Object>> fetchList(String uri, List<Map<String, Object>> fallback) {
         try {
-            List<Map<String, Object>> body = RestClient.create().get()
+            List<Map<String, Object>> body = webClient.get()
                     .uri(uri)
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError, (req, res) -> { })
-                    .body(LIST_OF_MAPS);
+                    .bodyToMono(LIST_OF_MAPS)
+                    .block();
             return body == null ? fallback : body;
-        } catch (RestClientResponseException ex) {
+        } catch (WebClientResponseException ex) {
             return fallback;
         } catch (Exception ex) {
             return fallback;
@@ -440,13 +451,13 @@ public class WebPortalServiceImpl implements WebPortalService {
 
     private Map<String, Object> fetchMap(String uri, Map<String, Object> fallback) {
         try {
-            Map<String, Object> body = RestClient.create().get()
+            Map<String, Object> body = webClient.get()
                     .uri(uri)
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError, (req, res) -> { })
-                    .body(new ParameterizedTypeReference<Map<String, Object>>() { });
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() { })
+                    .block();
             return body == null ? fallback : body;
-        } catch (RestClientResponseException ex) {
+        } catch (WebClientResponseException ex) {
             return fallback;
         } catch (Exception ex) {
             return fallback;
@@ -456,11 +467,12 @@ public class WebPortalServiceImpl implements WebPortalService {
     private List<Map<String, Object>> postForList(String uri, Map<String, Object> body,
                                                   List<Map<String, Object>> fallback) {
         try {
-            List<Map<String, Object>> response = RestClient.create().post()
+            List<Map<String, Object>> response = webClient.post()
                     .uri(uri)
-                    .body(body)
+                    .bodyValue(body)
                     .retrieve()
-                    .body(LIST_OF_MAPS);
+                    .bodyToMono(LIST_OF_MAPS)
+                    .block();
             return response == null ? fallback : response;
         } catch (Exception ex) {
             return fallback;

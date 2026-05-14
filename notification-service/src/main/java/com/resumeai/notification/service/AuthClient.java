@@ -2,18 +2,21 @@ package com.resumeai.notification.service;
 
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @Slf4j
 public class AuthClient {
 
-    private final String authServiceUrl;
+    private final WebClient webClient;
 
-    public AuthClient(@Value("${app.auth.base-url:http://localhost:8081}") String authServiceUrl) {
-        this.authServiceUrl = authServiceUrl;
+    public AuthClient(
+            @Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder,
+            @Value("${app.auth.base-url:http://auth-service}") String authServiceUrl) {
+        this.webClient = webClientBuilder.clone().baseUrl(authServiceUrl).build();
     }
 
     /**
@@ -22,11 +25,11 @@ public class AuthClient {
     public String fetchUserEmail(Long userId) {
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> user = RestClient.create(authServiceUrl)
-                    .get()
+            Map<String, Object> user = webClient.get()
                     .uri("/api/v1/auth/profile/{userId}", userId)
                     .retrieve()
-                    .body(Map.class);
+                    .bodyToMono(Map.class)
+                    .block();
             
             if (user != null && user.get("email") != null) {
                 return (String) user.get("email");

@@ -80,9 +80,7 @@ public class SecurityConfig {
                     "/oauth2/**",
                     "/login/oauth2/**",
                     "/error",
-                    "/actuator/health",
-                    "/actuator/info",
-                    "/actuator/prometheus",
+                    "/actuator/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"

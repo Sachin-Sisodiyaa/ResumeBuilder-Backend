@@ -3,6 +3,13 @@ spring:
     import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
   application:
     name: resume-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+        enabled: ${ADMIN_CLIENT_ENABLED:false}
+        instance:
+          prefer-ip: true
   servlet:
     multipart:
       max-file-size: ${RESUME_IMPORT_MAX_FILE_SIZE:8MB}
@@ -21,7 +28,6 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
 
 server:
   port: 8082
@@ -42,7 +48,16 @@ management:
 
 app:
   template:
-    base-url: ${TEMPLATE_SERVICE_URL:http://localhost:8085}
+    base-url: ${TEMPLATE_SERVICE_URL:http://template-service}
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
 
 logging:
   level:

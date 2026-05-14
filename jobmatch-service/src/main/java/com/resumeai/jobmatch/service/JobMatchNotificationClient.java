@@ -2,27 +2,33 @@ package com.resumeai.jobmatch.service;
 
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @Slf4j
 public class JobMatchNotificationClient {
 
-    @Value("${app.notification.base-url:http://localhost:8088}")
-    private String notificationServiceUrl;
+    private final WebClient webClient;
+
+    public JobMatchNotificationClient(
+            @Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder,
+            @Value("${app.notification.base-url:http://notification-service}") String notificationServiceUrl) {
+        this.webClient = webClientBuilder.clone().baseUrl(notificationServiceUrl).build();
+    }
 
     public void notifyUser(Map<String, Object> payload) {
         try {
-            RestClient.create(notificationServiceUrl)
-                    .post()
+            webClient.post()
                     .uri("/api/v1/notifications")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(payload)
+                    .bodyValue(payload)
                     .retrieve()
-                    .toBodilessEntity();
+                    .toBodilessEntity()
+                    .block();
         } catch (Exception ex) {
             log.debug("Job match notification dispatch skipped: {}", ex.getMessage());
         }

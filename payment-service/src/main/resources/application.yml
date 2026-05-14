@@ -3,6 +3,13 @@ spring:
     import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
   application:
     name: payment-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+        enabled: ${ADMIN_CLIENT_ENABLED:false}
+        instance:
+          prefer-ip: true
   datasource:
     url: ${PAYMENT_DB_URL:jdbc:mysql://localhost:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
@@ -17,7 +24,6 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
 
 server:
   port: 8089
@@ -40,5 +46,14 @@ app:
     premium-monthly-amount-paise: ${RAZORPAY_PREMIUM_MONTHLY_AMOUNT_PAISE:${RAZORPAY_PREMIUM_AMOUNT_PAISE:49900}}
     premium-yearly-amount-paise: ${RAZORPAY_PREMIUM_YEARLY_AMOUNT_PAISE:499900}
   auth:
-    base-url: ${AUTH_SERVICE_URL:http://localhost:8081}
+    base-url: ${AUTH_SERVICE_URL:http://auth-service}
     internal-service-key: ${INTERNAL_SERVICE_KEY:resumeai-local-internal-service-key}
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true

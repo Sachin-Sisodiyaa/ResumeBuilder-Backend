@@ -1,0 +1,33 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
+  application:
+    name: discovery-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+        enabled: ${ADMIN_CLIENT_ENABLED:true}
+        instance:
+          prefer-ip: true
+
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  server:
+    enable-self-preservation: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}

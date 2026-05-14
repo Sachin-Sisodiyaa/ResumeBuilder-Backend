@@ -3,12 +3,21 @@ spring:
     import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
   application:
     name: auth-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+        enabled: ${ADMIN_CLIENT_ENABLED:false}
+        instance:
+          prefer-ip: true
   servlet:
     multipart:
       max-file-size: ${PROFILE_PICTURE_MAX_FILE_SIZE:5MB}
       max-request-size: ${PROFILE_PICTURE_MAX_REQUEST_SIZE:5MB}
   data:
     redis:
+      repositories:
+        enabled: false
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
@@ -23,12 +32,12 @@ spring:
       minimum-idle: 2
       connection-timeout: 30000
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
     show-sql: false
     properties:
       hibernate:
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
         format_sql: false
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -114,9 +123,18 @@ app:
     enabled: ${APP_MAIL_ENABLED:true}
     from: ${MAIL_FROM:no-reply@resumeai.local}
   notification:
-    base-url: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+    base-url: ${NOTIFICATION_SERVICE_URL:http://notification-service}
     connect-timeout-ms: ${NOTIFICATION_CONNECT_TIMEOUT_MS:2000}
     read-timeout-ms: ${NOTIFICATION_READ_TIMEOUT_MS:10000}
   oauth2:
     redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:3000/auth/oauth2/callback}
     authorization-base-url: ${OAUTH2_AUTHORIZATION_BASE_URL:http://localhost:8090}
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true

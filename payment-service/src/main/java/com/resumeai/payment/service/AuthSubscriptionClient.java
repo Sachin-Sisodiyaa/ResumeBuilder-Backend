@@ -1,34 +1,33 @@
 package com.resumeai.payment.service;
 
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
 public class AuthSubscriptionClient {
-    private final RestTemplate restTemplate;
-    private final String authBaseUrl;
+    private final WebClient webClient;
     private final String internalServiceKey;
 
     public AuthSubscriptionClient(
-            RestTemplateBuilder restTemplateBuilder,
-            @Value("${app.auth.base-url}") String authBaseUrl,
+            @Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder,
+            @Value("${app.auth.base-url:http://auth-service}") String authBaseUrl,
             @Value("${app.auth.internal-service-key}") String internalServiceKey) {
-        this.restTemplate = restTemplateBuilder.build();
-        this.authBaseUrl = authBaseUrl;
+        this.webClient = webClientBuilder.clone().baseUrl(authBaseUrl).build();
         this.internalServiceKey = internalServiceKey;
     }
 
     public void updateSubscription(Long userId, String plan) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-Internal-Service-Key", internalServiceKey);
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(Map.of("subscriptionPlan", plan), headers);
-        restTemplate.put(authBaseUrl + "/api/v1/auth/internal/subscription/" + userId, entity);
+        webClient.put()
+                .uri("/api/v1/auth/internal/subscription/{userId}", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Internal-Service-Key", internalServiceKey)
+                .bodyValue(Map.of("subscriptionPlan", plan))
+                .retrieve()
+                .toBodilessEntity()
+                .block();
     }
 }

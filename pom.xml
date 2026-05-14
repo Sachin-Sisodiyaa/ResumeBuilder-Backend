@@ -23,6 +23,8 @@
         <module>payment-service</module>
         <module>resumeai-web</module>
         <module>gateway-service</module>
+        <module>discovery-service</module>
+        <module>admin-service</module>
     </modules>
 
     <properties>
@@ -30,6 +32,7 @@
         <lombok.version>1.18.38</lombok.version>
         <spring.boot.version>3.3.4</spring.boot.version>
         <spring.cloud.version>2023.0.3</spring.cloud.version>
+        <spring.boot.admin.version>3.3.4</spring.boot.admin.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <jjwt.version>0.12.6</jjwt.version>
@@ -149,6 +152,16 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
                 <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.codecentric</groupId>
+                <artifactId>spring-boot-admin-starter-server</artifactId>
+                <version>${spring.boot.admin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.codecentric</groupId>
+                <artifactId>spring-boot-admin-starter-client</artifactId>
+                <version>${spring.boot.admin.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

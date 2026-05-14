@@ -3,6 +3,13 @@ spring:
     import: "optional:file:.env[.properties],optional:file:../.env[.properties],optional:file:../../.env[.properties],optional:file:ResumeBuilder-Backend/.env[.properties]"
   application:
     name: gateway-service
+  boot:
+    admin:
+      client:
+        url: ${ADMIN_SERVER_URL:http://localhost:9090}
+        enabled: ${ADMIN_CLIENT_ENABLED:false}
+        instance:
+          prefer-ip: true
   cloud:
     gateway:
       globalcors:
@@ -25,10 +32,20 @@ spring:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
         - AddResponseHeader=X-ResumeAI-Gateway, gateway-service
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+            methods: GET
+            backoff:
+              firstBackoff: 500ms
+              maxBackoff: 3s
+              factor: 2
+              basedOnPreviousValue: false
 
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          uri: lb://auth-service
           predicates:
             - Path=/api/v1/auth/**
           filters:
@@ -38,7 +55,7 @@ spring:
                 fallbackUri: forward:/fallback/auth-service
 
         - id: auth-oauth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          uri: lb://auth-service
           predicates:
             - Path=/oauth2/**,/login/oauth2/**
           filters:
@@ -48,7 +65,7 @@ spring:
                 fallbackUri: forward:/fallback/auth-service
 
         - id: resume-service
-          uri: ${RESUME_SERVICE_URL:http://localhost:8082}
+          uri: lb://resume-service
           predicates:
             - Path=/api/v1/resumes/**
           filters:
@@ -58,7 +75,7 @@ spring:
                 fallbackUri: forward:/fallback/resume-service
 
         - id: section-service
-          uri: ${SECTION_SERVICE_URL:http://localhost:8083}
+          uri: lb://section-service
           predicates:
             - Path=/api/v1/sections/**
           filters:
@@ -68,7 +85,7 @@ spring:
                 fallbackUri: forward:/fallback/section-service
 
         - id: ai-service
-          uri: ${AI_SERVICE_URL:http://localhost:8084}
+          uri: lb://ai-service
           predicates:
             - Path=/api/v1/ai/**
           filters:
@@ -78,7 +95,7 @@ spring:
                 fallbackUri: forward:/fallback/ai-service
 
         - id: template-service
-          uri: ${TEMPLATE_SERVICE_URL:http://localhost:8085}
+          uri: lb://template-service
           predicates:
             - Path=/api/v1/templates/**
           filters:
@@ -88,7 +105,7 @@ spring:
                 fallbackUri: forward:/fallback/template-service
 
         - id: export-service
-          uri: ${EXPORT_SERVICE_URL:http://localhost:8086}
+          uri: lb://export-service
           predicates:
             - Path=/api/v1/exports/**
           filters:
@@ -98,7 +115,7 @@ spring:
                 fallbackUri: forward:/fallback/export-service
 
         - id: jobmatch-service
-          uri: ${JOBMATCH_SERVICE_URL:http://localhost:8087}
+          uri: lb://jobmatch-service
           predicates:
             - Path=/api/v1/job-matches/**
           filters:
@@ -108,7 +125,7 @@ spring:
                 fallbackUri: forward:/fallback/jobmatch-service
 
         - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8088}
+          uri: lb://notification-service
           predicates:
             - Path=/api/v1/notifications/**
           filters:
@@ -118,7 +135,7 @@ spring:
                 fallbackUri: forward:/fallback/notification-service
 
         - id: payment-service
-          uri: ${PAYMENT_SERVICE_URL:http://localhost:8089}
+          uri: lb://payment-service
           predicates:
             - Path=/api/v1/payments/**
           filters:
@@ -128,7 +145,7 @@ spring:
                 fallbackUri: forward:/fallback/payment-service
 
         - id: resumeai-web
-          uri: ${WEB_SERVICE_URL:http://localhost:8091}
+          uri: lb://resumeai-web
           predicates:
             - Path=/api/v1/web/**
           filters:
@@ -148,6 +165,15 @@ management:
   endpoint:
     health:
       show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
 
 resilience4j:
   circuitbreaker:

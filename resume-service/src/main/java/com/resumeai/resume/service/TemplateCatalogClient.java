@@ -1,20 +1,23 @@
 package com.resumeai.resume.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Slf4j
 public class TemplateCatalogClient {
-    private final RestClient restClient;
+    private final WebClient webClient;
 
-    public TemplateCatalogClient(@Value("${app.template.base-url:http://localhost:8085}") String templateServiceUrl) {
-        this.restClient = RestClient.create(templateServiceUrl);
+    public TemplateCatalogClient(
+            @Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder,
+            @Value("${app.template.base-url:http://template-service}") String templateServiceUrl) {
+        this.webClient = webClientBuilder.clone().baseUrl(templateServiceUrl).build();
     }
 
     public TemplateSummary validateUsableTemplate(Long templateId, String subscriptionPlan) {
@@ -41,10 +44,11 @@ public class TemplateCatalogClient {
         }
 
         try {
-            restClient.put()
+            webClient.put()
                     .uri("/api/v1/templates/{templateId}/usage", templateId)
                     .retrieve()
-                    .toBodilessEntity();
+                    .toBodilessEntity()
+                    .block();
         } catch (Exception ex) {
             log.debug("Template usage update skipped for template {}: {}", templateId, ex.getMessage());
         }
@@ -52,13 +56,14 @@ public class TemplateCatalogClient {
 
     private TemplateSummary fetchTemplate(Long templateId) {
         try {
-            return restClient.get()
+            return webClient.get()
                     .uri("/api/v1/templates/{templateId}", templateId)
                     .retrieve()
-                    .body(TemplateSummary.class);
-        } catch (HttpClientErrorException.NotFound ex) {
+                    .bodyToMono(TemplateSummary.class)
+                    .block();
+        } catch (WebClientResponseException.NotFound ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected template was not found", ex);
-        } catch (HttpClientErrorException ex) {
+        } catch (WebClientResponseException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected template cannot be used", ex);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
