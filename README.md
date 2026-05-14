@@ -1,6 +1,6 @@
 # ResumeBuilder-Backend
 
-Spring Boot multi-module backend scaffold for the ResumeAI case study defined in `docs/Sprint-CaseStudy.pdf`.
+Spring Boot multi-module backend scaffold for the ResumeAI.
 
 ## Services
 
@@ -11,6 +11,7 @@ Spring Boot multi-module backend scaffold for the ResumeAI case study defined in
 - `template-service`
 - `export-service`
 - `jobmatch-service`
+- `payment-service`
 - `notification-service`
 - `resumeai-web`
 - `gateway-service`
