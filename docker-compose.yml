@@ -35,6 +35,7 @@ services:
   discovery-service:
     build:
       context: .
+      dockerfile: discovery-service/Dockerfile
       args:
         MODULE: discovery-service
     ports:
@@ -54,6 +55,7 @@ services:
   admin-service:
     build:
       context: .
+      dockerfile: admin-service/Dockerfile
       args:
         MODULE: admin-service
     ports:
@@ -76,6 +78,7 @@ services:
   gateway-service:
     build:
       context: .
+      dockerfile: gateway-service/Dockerfile
       args:
         MODULE: gateway-service
     ports:
@@ -125,6 +128,7 @@ services:
   auth-service:
     build:
       context: .
+      dockerfile: auth-service/Dockerfile
       args:
         MODULE: auth-service
     ports:
@@ -167,6 +171,7 @@ services:
   resume-service:
     build:
       context: .
+      dockerfile: resume-service/Dockerfile
       args:
         MODULE: resume-service
     ports:
@@ -209,6 +214,7 @@ services:
   section-service:
     build:
       context: .
+      dockerfile: section-service/Dockerfile
       args:
         MODULE: section-service
     ports:
@@ -250,6 +256,7 @@ services:
   ai-service:
     build:
       context: .
+      dockerfile: ai-service/Dockerfile
       args:
         MODULE: ai-service
     ports:
@@ -292,6 +299,7 @@ services:
   template-service:
     build:
       context: .
+      dockerfile: template-service/Dockerfile
       args:
         MODULE: template-service
     ports:
@@ -333,6 +341,7 @@ services:
   export-service:
     build:
       context: .
+      dockerfile: export-service/Dockerfile
       args:
         MODULE: export-service
     ports:
@@ -375,6 +384,7 @@ services:
   jobmatch-service:
     build:
       context: .
+      dockerfile: jobmatch-service/Dockerfile
       args:
         MODULE: jobmatch-service
     ports:
@@ -417,6 +427,7 @@ services:
   notification-service:
     build:
       context: .
+      dockerfile: notification-service/Dockerfile
       args:
         MODULE: notification-service
     ports:
@@ -459,6 +470,7 @@ services:
   payment-service:
     build:
       context: .
+      dockerfile: payment-service/Dockerfile
       args:
         MODULE: payment-service
     ports:
@@ -502,6 +514,7 @@ services:
   resumeai-web:
     build:
       context: .
+      dockerfile: resumeai-web/Dockerfile
       args:
         MODULE: resumeai-web
     ports:
