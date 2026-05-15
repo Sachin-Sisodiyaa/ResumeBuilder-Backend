@@ -47,7 +47,7 @@ Spring Boot multi-module backend scaffold for the ResumeAI.
 
 ## Run
 
-Create the service databases once. The datasource defaults use the MySQL credential already present in the codebase: `root` / `18052004`.
+Create the service databases once. Database URLs and credentials are read from environment variables; use `.env.example` as the template for local development.
 
 ```bash
 mysql -u root -p < docs/schema-init.sql

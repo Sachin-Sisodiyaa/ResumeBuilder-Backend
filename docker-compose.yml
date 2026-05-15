@@ -139,9 +139,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${AUTH_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -182,9 +182,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${RESUME_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -225,9 +225,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_section?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${SECTION_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -267,9 +267,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_ai?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${AI_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -310,9 +310,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_template?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${TEMPLATE_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -352,9 +352,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_export?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${EXPORT_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -395,9 +395,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_jobmatch?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${JOBMATCH_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -438,9 +438,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${NOTIFICATION_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
@@ -481,9 +481,9 @@ services:
     env_file:
       - .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-18052004}
+      - SPRING_DATASOURCE_URL=${PAYMENT_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_URL=${REDIS_URL:-redis://red-d83dq8ugvqtc73es5kpg:6379}
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq-3-management-oi94}
