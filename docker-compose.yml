@@ -135,8 +135,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -177,8 +177,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -219,8 +219,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_section?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_section?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -260,8 +260,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_ai?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_ai?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -302,8 +302,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_template?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_template?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -343,8 +343,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_export?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_export?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -385,8 +385,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_jobmatch?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_jobmatch?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -427,8 +427,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis
@@ -469,8 +469,8 @@ services:
     env_file:
       - .env
     environment:
-      - PAYMENT_DB_URL=jdbc:mysql://host.docker.internal:3306/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - DB_USERNAME=root
+      - SPRING_DATASOURCE_URL=jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_payment?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${DB_PASSWORD:-18052004}
       - HIBERNATE_DDL_AUTO=update
       - REDIS_HOST=redis

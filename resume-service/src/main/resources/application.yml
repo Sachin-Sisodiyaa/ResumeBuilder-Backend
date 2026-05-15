@@ -15,7 +15,7 @@ spring:
       max-file-size: ${RESUME_IMPORT_MAX_FILE_SIZE:8MB}
       max-request-size: ${RESUME_IMPORT_MAX_REQUEST_SIZE:8MB}
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${SPRING_DATASOURCE_URL:${DB_URL:jdbc:mysql://yamanote.proxy.rlwy.net:58560/resumeai_resume?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:18052004}
     driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
