@@ -29,13 +29,6 @@ Dockerfile Path: admin-service/Dockerfile
 Docker Build Context Directory: .
 ```
 
-Each service Dockerfile expects its jar to exist under
-`<service-name>/target/*.jar` before Docker builds. Run Maven packaging before
-building an image:
-
-```bash
-mvn clean package -DskipTests
-```
-
-For GitHub-based Render Docker deploys, this style only works if the packaged
-jar files are present in the build context.
+Each service Dockerfile builds its jar inside Docker. Render must build from
+the repository root so the Dockerfile can see the parent `pom.xml` and all
+module folders.

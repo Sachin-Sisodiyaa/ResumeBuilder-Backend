@@ -2,6 +2,7 @@
 .env
 .m2
 .settings
+**/target
 **/.classpath
 **/.project
 **/.settings
