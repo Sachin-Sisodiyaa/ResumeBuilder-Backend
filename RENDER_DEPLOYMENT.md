@@ -29,6 +29,13 @@ Dockerfile Path: admin-service/Dockerfile
 Docker Build Context Directory: .
 ```
 
-Each service Dockerfile builds its own jar inside Docker. Do not use
-`COPY target/*.jar` Dockerfiles for Render GitHub deploys unless you commit
-`target/` artifacts, which is not recommended.
+Each service Dockerfile expects its jar to exist under
+`<service-name>/target/*.jar` before Docker builds. Run Maven packaging before
+building an image:
+
+```bash
+mvn clean package -DskipTests
+```
+
+For GitHub-based Render Docker deploys, this style only works if the packaged
+jar files are present in the build context.
