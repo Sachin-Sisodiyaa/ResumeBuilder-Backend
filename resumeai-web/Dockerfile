@@ -18,7 +18,7 @@ COPY section-service/pom.xml section-service/pom.xml
 COPY template-service/pom.xml template-service/pom.xml
 RUN mvn -q -pl ${MODULE} -am dependency:go-offline
 
-COPY ${MODULE}/src ${MODULE}/src
+COPY . .
 RUN mvn -q -pl ${MODULE} -am -DskipTests package
 
 FROM eclipse-temurin:17-jre-alpine
