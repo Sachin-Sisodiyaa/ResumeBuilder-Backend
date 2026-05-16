@@ -1,4 +1,4 @@
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 ARG MODULE=admin-service
 
@@ -21,8 +21,9 @@ RUN mvn -q -pl ${MODULE} -am dependency:go-offline
 COPY . .
 RUN mvn -q -pl ${MODULE} -am -DskipTests package
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 ARG MODULE=admin-service
+RUN apk add --no-cache wget
 COPY --from=build /workspace/${MODULE}/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
