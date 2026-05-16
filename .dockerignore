@@ -1,10 +1,12 @@
 .git
 .env
 .m2
+**/.m2
 .settings
 **/target
 **/.classpath
 **/.project
 **/.settings
 *.log
+**/*.log
 payload.json
