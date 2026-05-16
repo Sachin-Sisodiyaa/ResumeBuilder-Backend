@@ -45,7 +45,7 @@ spring:
 
       routes:
         - id: auth-service
-          uri: lb://auth-service
+          uri: ${AUTH_SERVICE_URL:lb://auth-service}
           predicates:
             - Path=/api/v1/auth/**
           filters:
@@ -55,7 +55,7 @@ spring:
                 fallbackUri: forward:/fallback/auth-service
 
         - id: auth-oauth-service
-          uri: lb://auth-service
+          uri: ${AUTH_SERVICE_URL:lb://auth-service}
           predicates:
             - Path=/oauth2/**,/login/oauth2/**
           filters:
@@ -65,7 +65,7 @@ spring:
                 fallbackUri: forward:/fallback/auth-service
 
         - id: resume-service
-          uri: lb://resume-service
+          uri: ${RESUME_SERVICE_URL:lb://resume-service}
           predicates:
             - Path=/api/v1/resumes/**
           filters:
@@ -75,7 +75,7 @@ spring:
                 fallbackUri: forward:/fallback/resume-service
 
         - id: section-service
-          uri: lb://section-service
+          uri: ${SECTION_SERVICE_URL:lb://section-service}
           predicates:
             - Path=/api/v1/sections/**
           filters:
@@ -85,7 +85,7 @@ spring:
                 fallbackUri: forward:/fallback/section-service
 
         - id: ai-service
-          uri: lb://ai-service
+          uri: ${AI_SERVICE_URL:lb://ai-service}
           predicates:
             - Path=/api/v1/ai/**
           filters:
@@ -95,7 +95,7 @@ spring:
                 fallbackUri: forward:/fallback/ai-service
 
         - id: template-service
-          uri: lb://template-service
+          uri: ${TEMPLATE_SERVICE_URL:lb://template-service}
           predicates:
             - Path=/api/v1/templates/**
           filters:
@@ -105,7 +105,7 @@ spring:
                 fallbackUri: forward:/fallback/template-service
 
         - id: export-service
-          uri: lb://export-service
+          uri: ${EXPORT_SERVICE_URL:lb://export-service}
           predicates:
             - Path=/api/v1/exports/**
           filters:
@@ -115,7 +115,7 @@ spring:
                 fallbackUri: forward:/fallback/export-service
 
         - id: jobmatch-service
-          uri: lb://jobmatch-service
+          uri: ${JOBMATCH_SERVICE_URL:lb://jobmatch-service}
           predicates:
             - Path=/api/v1/job-matches/**
           filters:
@@ -125,7 +125,7 @@ spring:
                 fallbackUri: forward:/fallback/jobmatch-service
 
         - id: notification-service
-          uri: lb://notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:lb://notification-service}
           predicates:
             - Path=/api/v1/notifications/**
           filters:
@@ -135,7 +135,7 @@ spring:
                 fallbackUri: forward:/fallback/notification-service
 
         - id: payment-service
-          uri: lb://payment-service
+          uri: ${PAYMENT_SERVICE_URL:lb://payment-service}
           predicates:
             - Path=/api/v1/payments/**
           filters:
@@ -145,7 +145,7 @@ spring:
                 fallbackUri: forward:/fallback/payment-service
 
         - id: resumeai-web
-          uri: lb://resumeai-web
+          uri: ${RESUMEAI_WEB_URL:lb://resumeai-web}
           predicates:
             - Path=/api/v1/web/**
           filters:
